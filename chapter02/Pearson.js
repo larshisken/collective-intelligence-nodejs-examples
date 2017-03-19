@@ -1,6 +1,4 @@
-const critics = require('../recommendations');
-
-let Pearson = class Pearson {
+module.exports = class Pearson {
 
     // Returns the Pearson correlation coefficient for p1 and p2
     static sim(prefs, person1, person2) {
@@ -52,7 +50,3 @@ let Pearson = class Pearson {
     }
 
 }
-
-module.exports = Pearson;
-
-console.log(Pearson.sim(critics, 'Lisa Rose', 'Gene Seymour'));

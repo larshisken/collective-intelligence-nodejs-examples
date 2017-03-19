@@ -1,9 +1,7 @@
-const critics = require('../recommendations');
-
-let Euclidean = class Euclidean {
+module.exports = class Euclidean {
 
     // Returns a distance-based similarity score for person1 and person2
-    static simDistance(prefs, person1, person2) {
+    static sim(prefs, person1, person2) {
 
         // Get the list of shared_items
         let si = prefs[person1].filter(item => {
@@ -36,7 +34,3 @@ let Euclidean = class Euclidean {
     }
 
 }
-
-module.export = Euclidean;
-
-console.log(Euclidean.simDistance(critics, 'Lisa Rose', 'Gene Seymour'));
