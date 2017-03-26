@@ -1,0 +1,22 @@
+{
+  "name": "collective-intelligence-nodejs-examples",
+  "version": "0.0.1",
+  "description": "A collection of examples from Programming Collective Intelligence rewritten in Javascript",
+  "main": "recommendations.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/larshisken/collective-intelligence-nodejs-examples.git"
+  },
+  "author": "Lars Hisken",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/larshisken/collective-intelligence-nodejs-examples/issues"
+  },
+  "homepage": "https://github.com/larshisken/collective-intelligence-nodejs-examples#readme",
+  "dependencies": {
+    "lodash": "^4.17.4"
+  }
+}
