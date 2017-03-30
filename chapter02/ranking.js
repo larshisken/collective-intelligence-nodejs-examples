@@ -1,93 +1,92 @@
+const _ = require('lodash');
+const critics = require('../recommendations');
 let Euclidean = require('./Euclidean');
 let Pearson = require('./Pearson');
-const critics = require('../recommendations');
 
 // Returns the best matches for person from the prefs dictionary.
 // Number of results and similarity function are optional params.
 let topMatches = (prefs, person, n = 5, similarity = 'sim_pearson') => {
-    let scores = {};
 
-    for (var pref in prefs) {
-        if (!prefs.hasOwnProperty(pref))
-            continue;
+    let scores = [];
+    let prefsWithoutPerson = _.omit(prefs, person);
 
-        if (pref !== person) {
-            if (similarity === 'sim_pearson')
-                scores[pref] = Pearson.sim(prefs, person, pref);
+    _.forIn(prefsWithoutPerson, (value, key) => {
 
-            if (similarity === 'sim_euclidean')
-                scores[pref] = Euclidean.sim(prefs, person, pref);
-        }
-    }
+        let score = {
+            person: key
+        };
 
-    // Sort the list so the highest scores appear at the top
-    ranking = Object.keys(scores).sort((a, b) => {
-        return scores[b] - scores[a];
+        if (similarity === 'sim_pearson')
+            score.score = Pearson.sim(prefs, person, key);
+
+        if (similarity === 'sim_euclidean')
+            score.score = Euclidean.sim(prefs, person, key);
+
+        scores.push(score);
+
     });
-    ranking = ranking.map(obj => {
-        let rObj = {};
-        rObj[obj] = scores[obj];
-        return rObj;
-    });
-    ranking.length = n;
 
-    return ranking;
+    scores = _.reverse(_.sortBy(scores, 'score'));
+    scores.length = n;
+
+    return scores;
+
 }
 
 // Gets recommendations for a person by using a weighted average
 // of every other user's rankings
 let getRecommendations = (prefs, person, similarity = 'sim_pearson') => {
+
     let totals = {};
     let simSums = {};
 
-    for (other in prefs) {
-        if (!prefs.hasOwnProperty(other)) continue;
+    // Don't compare me to myself
+    let prefsWithoutPerson = _.omit(prefs, person);
 
-        // Don't compare me to myself
-        if (other === person) continue;
+    _.forIn(prefsWithoutPerson, (value, key) => {
 
         let sim;
+
         if (similarity === 'sim_pearson')
-            sim = Pearson.sim(prefs, person, other);
+            sim = Pearson.sim(prefs, person, key);
+
         if (similarity === 'sim_euclidean')
-            sim = Euclidean.sim(prefs, person, other);
+            sim = Euclidean.sim(prefs, person, key);
 
         // Ignore scores of zero or lower
-        if (sim <= 0) continue;
+        if (sim <= 0) return;
 
-        prefs[other].forEach(item => {
+        _.each(prefs[key], (pref) => {
 
-            let key = Object.keys(item)[0];
+            let key = _.keys(pref)[0];
+            let seen = _.some(prefs[person], key);
 
-            // only score movies I haven't seen yet
-            let m = prefs[person].some(el => {
-                if (el[key]) return true;
-            });
+            if (!seen) {
 
-            if (!m) {
                 // Similarity * Score
                 if (totals[key] === undefined) totals[key] = 0;
-                totals[key] += item[key] * sim;
+                totals[key] += pref[key] * sim;
 
                 // Sum of similarities
                 if (simSums[key] === undefined) simSums[key] = 0;
                 simSums[key] += sim;
+
             }
+
         });
-    }
 
-    // Create the normalized list
-    let scores = Object.keys(totals).map(key => {
-        let rObj = {};
-        rObj[key] = totals[key] / simSums[key];
-        return rObj;
-    });
-    let ranking = scores.sort((a, b) => {
-        return b[Object.keys(b)[0]] - a[Object.keys(a)[0]];
     });
 
-    // Return the sorted list
-    return ranking;
+    let scores = _.map(totals, (value, key) => {
+        return {
+            movie: key,
+            score: value / simSums[key]
+        }
+    });
+
+    scores = _.reverse(_.sortBy(scores, 'score'));
+
+    return scores;
 
 }
 
